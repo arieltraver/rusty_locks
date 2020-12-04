@@ -12,8 +12,10 @@ fn main() {
     let buffer = prepare_buff(filename);
     println!("{}", buffer); 
     let mut word_map: HashMap<String,i32> = HashMap::new();  
-    hash_words(& mut word_map, &buffer, 'a');
-    assert_eq!(word_map.get("apple"), Some(&1));
+    hash_words(& mut word_map, &buffer, 'd');
+    let wanted = "dummy";
+    println!("word count for {}: {}",wanted, word_map.get(wanted).unwrap() );
+   
 }
 
 fn prepare_buff(filename:String)-> String {
