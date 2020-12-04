@@ -13,8 +13,16 @@ fn main() {
     println!("{}", buffer); 
     let mut word_map: HashMap<String,i32> = HashMap::new();  
     hash_words(& mut word_map, &buffer, 'd');
-    let wanted = "dummy";
-    println!("word count for {}: {}",wanted, word_map.get(wanted).unwrap() );
+    let wanted = String::from("dummy");
+    let edge = String::from("cod");
+    if word_map.contains_key(&wanted){
+        println!("word count for {}: {}", &wanted, word_map.get(&wanted).unwrap() );
+    }
+
+    if !word_map.contains_key(&edge){
+        println!("test passed");
+
+    }
    
 }
 
@@ -26,11 +34,14 @@ fn prepare_buff(filename:String)-> String {
 }
 
 fn hash_words(word_map:& mut HashMap<String, i32>, buff:&String, letter:char) {
+    // splits the word buffer by white spaces 
+    // the method also creates a iterator
     let cursor = buff.split_whitespace();
     //let current = cursor.next().unwrap();
-    // use an iterator
+    
     for current in cursor {
-       if current.contains(letter) {
+        // for each word in iterator that starts with the 
+       if current.starts_with(letter) {
            if word_map.contains_key::<str>(&current) {
                let count=word_map.get_mut::<str>(&current).unwrap();
                *count = *count+1;
