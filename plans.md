@@ -3,7 +3,7 @@
 ## How to break up thread work
 * Have each thread work on one portion of the file and save counts to a vector array, combine at the end
 * Have hasmaps and every time you enter something in the map, you save its "key" into a key list. Then when preparing the histogram you just look at the keys in the key list
-    * All threads share the file and the hashmap
+    * All threads share the buffer and the hashmap
     * Each letter corresponds to a unique "keylist"
     * Each thread looks at words starting with one unique letter or range of letters (depending on how many processors we have)
         * A new value is entered in the keylist when a thread makes a new entry with count = 1 (if the key is there already, then don't add it to the list)
@@ -28,11 +28,13 @@
 * Inserting an index into the hashtable: (worst case all unique words, assuming insertion is o(1): O(unique).
     * Updating the hashmap in general is O(filesize).
     * This will be problematic if hashmaps can't be written to concurrently (in which case we would have to make one which can...
+        * If we use unique hashtables we don't need to worry about this
 * Reading through the list and obtaining the counts: O(unique)
 
 ## Analysis of Space Efficiency
-* Much better with one single hashtable
-    * Still can be large depending on how the String hashmap is implemented in Rust
+* Much better with one single hashtable -- edit, not true
+    * The hashmap implementation will grow the size of the array as needed
+        * Starts out small and expands as needed
     * HUGE performance loss if the array overflows the stack (forcing disc reads)
     * However we doubt their implementation would do that...
 * The lists won't exceed L(unique) //l is size... there's probably an official way to denote that but haven't learned it
