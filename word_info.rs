@@ -13,7 +13,7 @@ fn main() {
     println!("{}", buffer); 
     let mut word_map: HashMap<String,i32> = HashMap::new();  
     hash_words(& mut word_map, &buffer, 'a');
-    assert_eq!(word_map.get("a"), Some(&2));
+    assert_eq!(word_map.get("apple"), Some(&1));
 }
 
 fn prepare_buff(filename:String)-> String {
