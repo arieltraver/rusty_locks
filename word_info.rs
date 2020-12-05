@@ -8,22 +8,13 @@ use std::str;
 
 
 fn main() {
-    let filename = String::from("test_1.txt");
-    let buffer = prepare_buff(filename);
-    println!("{}", buffer); 
-    let mut word_map: HashMap<String,i32> = HashMap::new();  
-    hash_words(& mut word_map, &buffer, 'd');
-    let wanted = String::from("dummy");
-    let edge = String::from("cod");
-    if word_map.contains_key(&wanted){
-        println!("word count for {}: {}", &wanted, word_map.get(&wanted).unwrap() );
-    }
+    let test_1 = String::from("test_1.txt");
+    let test_2 = String::from("test_2.txt");
+    run_tests(test_1);
+    run_tests(test_2);
+    
+    
 
-    if !word_map.contains_key(&edge){
-        println!("test passed");
-
-    }
-   
 }
 
 fn prepare_buff(filename:String)-> String {
@@ -50,5 +41,29 @@ fn hash_words(word_map:& mut HashMap<String, i32>, buff:&String, letter:char) {
            }
         }
     }
+} fn calculate_word_count(word_map: &mut HashMap<String,i32>,buff:&String){
+
+    let alphabet = "abcdefjhijklmnopqrsuvwxyzABCDEFJHIJKLMOPQRSTUVXYZ".chars();
+
+    for c in alphabet{
+        
+      hash_words(word_map, &buff, c);
+
+    }
+
+}
+
+fn run_tests(filename:String){
+
+    let buffer = prepare_buff(filename);
+    println!("{}", buffer); 
+    let mut word_map: HashMap<String,i32> = HashMap::new();  
+    calculate_word_count(& mut word_map,&buffer);
+
+    for ( word, count) in word_map.iter() {
+        println!("the word count for {}: {}",word,count);
+    }
+
+
 }
 
