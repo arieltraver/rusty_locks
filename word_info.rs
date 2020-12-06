@@ -12,27 +12,24 @@ fn main() {
     let test_2 = String::from("test_2.txt");
     run_tests(test_1);
     run_tests(test_2);
-    
-    
-
 }
 
 fn prepare_buff(filename:String)-> String {
     let buff = fs::read_to_string(filename)
         .expect("bad file read");
-    let newbuff = buff.replace("\n"," ");
+    let mut newbuff = replace_chars(buff);
+    newbuff = str::to_lowercase(&newbuff[..]);
     return newbuff;
 }
 
-fn hash_words(word_map:& mut HashMap<String, i32>, buff:&String, letter:char) {
+fn hash_words(word_map:& mut HashMap<String, i32>, buff:&String, letter:&String) {
     // splits the word buffer by white spaces 
     // the method also creates a iterator
     let cursor = buff.split_whitespace();
-    //let current = cursor.next().unwrap();
     
     for current in cursor {
         // for each word in iterator that starts with the 
-       if current.starts_with(letter) {
+        if current.starts_with(letter) {
            if word_map.contains_key::<str>(&current) {
                let count=word_map.get_mut::<str>(&current).unwrap();
                *count = *count+1;
@@ -41,13 +38,14 @@ fn hash_words(word_map:& mut HashMap<String, i32>, buff:&String, letter:char) {
            }
         }
     }
-} fn calculate_word_count(word_map: &mut HashMap<String,i32>,buff:&String){
+} 
+fn calculate_word_count(word_map: &mut HashMap<String,i32>,buff:&String){
 
-    let alphabet = "abcdefjhijklmnopqrsuvwxyzABCDEFJHIJKLMOPQRSTUVXYZ".chars();
+    let alphabet = "abcdefjhijklmnopqrsuvwxyz".chars();
 
     for c in alphabet{
-        
-      hash_words(word_map, &buff, c);
+       //thread begins here 
+      hash_words(word_map, &buff, &c.to_string());
 
     }
 
@@ -67,3 +65,16 @@ fn run_tests(filename:String){
 
 }
 
+fn replace_chars(buff:String) -> String {
+    let v = vec![',','\"','.','!','?','(',')','{','}',':',';','。','，','\\', '/','_','“','”'];
+    let mut new_buff = String::new();
+    for ch in buff.chars() {
+        if !v.contains(&ch) {
+            new_buff.push(ch);
+        }
+        else if ch == '\n' {
+            new_buff.push(' ');
+        }
+    }
+    new_buff
+} 
