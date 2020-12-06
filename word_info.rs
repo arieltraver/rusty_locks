@@ -24,7 +24,7 @@ struct LetterMap{
 fn prepare_buff(filename:String) -> String{
     let mut buff:String = fs::read_to_string(filename)
         .expect("bad file read");
-    replace_chars(buff);
+    buff = replace_chars(buff);
     buff = str::to_lowercase(&buff[..]);
     buff
 }
