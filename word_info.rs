@@ -1,4 +1,5 @@
 use std::fs;
+use std::sync::Arc;
 use std::thread;
 use std::string::String;
 use std::collections::HashMap;
@@ -51,6 +52,7 @@ fn calculate_word_count(buff:&String)->Vec<LetterMap>{
     let alphabet = "abcdefjhijklmnopqrsuvwxyz".chars();
     let alphabet2 = "abcdefjhijklmnopqrsuvwxyz".chars();
     let mut hash_vec = Vec::with_capacity(26);
+    let arc_buff = Arc::new(buff);
     for ch in alphabet2 {
         let mut chs = ch.to_string();
         let mut hmap = HashMap::<String,i32>::new();
@@ -59,14 +61,17 @@ fn calculate_word_count(buff:&String)->Vec<LetterMap>{
         hash_vec.push(lmap); //fill this vector with a struct for each letter
     }
     let mut i = 0;
+    let buff_copy = Arc::clone(&arc_buff);
     for c in alphabet{
-        thread::spawn(move||{ //make a new thread for every letter of the alphabet
-            hash_words(hash_vec[i], &c.to_string(), buff);
+        thread::spawn(move || { //make a new thread for every letter of the alphabet
+            hash_words(hash_vec[i], &c.to_string(), &buff_copy);
         });
+        
         i+=1;
     }
     hash_vec
 }
+
 
  fn run_tests(filename:String){
 
