@@ -4,11 +4,10 @@ use std::collections::HashMap;
 use std::str;
 use std::collections::LinkedList;
 use crossbeam_utils::thread;
-use std::sync::atomic;
-use std::sync::Arc;
 //use std::str::Chars;
 //use std::slice;
 
+#[derive(Copy, Clone)]
 struct LetterMap{
     letter: String,
     map: HashMap<String, i32>,
@@ -18,8 +17,8 @@ struct LetterMap{
  fn main() {
     let test_1 = String::from("test_1.txt");
     let test_2 = String::from("test_2.txt");
-    let buff1 = prepare_buff(test_1);
-    calculate_word_count(buff1);
+    run_tests(test_1);
+    run_tests(test_2);
 }
 
 fn prepare_buff(filename:String) -> String{
@@ -30,7 +29,7 @@ fn prepare_buff(filename:String) -> String{
     buff
 }
 
-fn hash_words(mut lmap: LetterMap, letter:String, buff:String){//->LetterMap{
+fn hash_words(mut lmap: LetterMap, letter:String, buff:String)->LetterMap{
     // splits the word buffer by white spaces 
     // the method also creates a iterator
     let letter_struct = &mut lmap;
@@ -43,53 +42,40 @@ fn hash_words(mut lmap: LetterMap, letter:String, buff:String){//->LetterMap{
                let count=letter_struct.map.get_mut::<str>(&current).unwrap();
                *count = *count+1;
            }
-           else { letter_struct.map.insert( (&current).to_string(), 1);}
+           else { letter_struct.map.insert( (&current).to_string(), 1);
+           }
         }
     }
-    //*letter_struct
+    *letter_struct
 } 
-fn calculate_word_count(buff:String){
+fn calculate_word_count(buff:String)->Vec<LetterMap>{
 
+    let alphabet = "abcdefjhijklmnopqrsuvwxyz".chars();
     let alphabet2 = "abcdefjhijklmnopqrsuvwxyz".chars();
-    let mut alphabet = Vec::with_capacity(26);
+    let mut hash_vec = Vec::with_capacity(26);
     for ch in alphabet2 {
         let mut chs = ch.to_string();
-        alphabet.push(chs);
-        let mut chs2 = ch.to_string();
         let mut hmap = HashMap::<String,i32>::new();
         let mut llist = LinkedList::<String>::new();
-        let mut lmap = LetterMap{letter:chs2,map:hmap,key_list:llist};
+        let mut lmap = LetterMap{letter:chs,map:hmap,key_list:llist};
+        hash_vec.push(lmap); //fill this vector with a struct for each letter
     }
-    let mut i = 0;
+    let mut c:char = 'a';
     crossbeam::scope(|s| { //make a new thread for every letter of the alphabet
-        while (i < 26) { 
+        let mut i = 0;
+        for c in alphabet{
             let handle = s.spawn(|_| {
-                let mut hmap = HashMap::<String,i32>::new();
-                let mut llist = LinkedList::<String>::new();
-                let mut lmap = LetterMap{letter:alphabet[i],map:hmap,key_list:llist};
-                let cursor = buff.split_whitespace();
-				for current in cursor {
-        // for each word in iterator that starts with the 
-					if current.starts_with(&alphabet[i]) {
-                
-           				if lmap.map.contains_key::<str>(&current) {
-           	    			let count=lmap.map.get_mut::<str>(&current).unwrap();
-            	   			*count = *count+1;
-           				}
-           				else { lmap.map.insert((&current).to_string(), 1);
-           				}
-        			}
-    			}
-                for (word, count) in lmap.map.iter() {
-                    println!("the word count for {}: {}",word,count);
-                }
+                let table = hash_vec[i];
+                let c2 = c.to_string();
+                hash_vec.push(hash_words(table, c2, buff));
             });
-            i += 1;
+        i+=1;
         }
     });
+    hash_vec
 }
 
-/**
+
  fn run_tests(filename:String){
 
     let buff:String = prepare_buff(filename);
@@ -103,7 +89,7 @@ fn calculate_word_count(buff:String){
     }
 
 }
-**/
+
 fn replace_chars(buff:String)->String {
     let v = vec![',','\"','.','!','?','(',')','{','}',':',';','。','，','\\', '/','_','“','”'];
     let mut new_buff = String::new();
