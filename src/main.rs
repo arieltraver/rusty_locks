@@ -1,11 +1,15 @@
+#[macro_use]
+extern crate lazy_static;
+
 use std::fs;
 use std::string::String;
 use std::collections::HashMap;
 use std::str;
 use std::collections::LinkedList;
 use crossbeam_utils::thread;
-use std::sync::atomic;
+use std::sync::RwLock;
 use std::sync::Arc;
+
 //use std::str::Chars;
 //use std::slice;
 
@@ -15,19 +19,31 @@ struct LetterMap{
     key_list: LinkedList<String>,
 }
 
+lazy_static! {
+    // creates a global instance of the text which can be shared with threads 
+    pub static ref TEXT_LOCK: RwLock<String> = RwLock::new(String::new());
+
+
+}
+
+
+
  fn main() {
     let test_1 = String::from("test_1.txt");
     let test_2 = String::from("test_2.txt");
     let buff1 = prepare_buff(test_1);
-    calculate_word_count(buff1);
+    calculate_word_count();
 }
 
-fn prepare_buff(filename:String) -> String{
+fn prepare_buff(filename:String){
     let mut buff:String = fs::read_to_string(filename)
         .expect("bad file read");
     buff = replace_chars(buff);
     buff = str::to_lowercase(&buff[..]);
-    buff
+    
+    let mut text = TEXT_LOCK.write().unwrap();
+    *text = buff;
+    
 }
 
 fn hash_words(mut lmap: LetterMap, letter:String, buff:String){//->LetterMap{
@@ -48,11 +64,11 @@ fn hash_words(mut lmap: LetterMap, letter:String, buff:String){//->LetterMap{
     }
     //*letter_struct
 } 
-fn calculate_word_count(not_static_buff:String){
+fn calculate_word_count(){
     let mut i:u8 = 97;
     crossbeam::scope(|s| { //make a new thread for every letter of the alphabet
-    static buff:String = not_static_buff.clone();
-    while (i < 122) { 
+    //static buff:String = not_static_buff.clone();
+    while i < 122 { 
         let mut icopy = Arc::new(i);
         s.spawn(move |_| {
             let ch = *icopy as char; //turn the unicode into a char...
@@ -61,6 +77,7 @@ fn calculate_word_count(not_static_buff:String){
             println!("{}", ch); //for testing
             let mut hmap = HashMap::<String,i32>::new(); //new map for thread
             let mut llist = LinkedList::<String>::new();
+            let buff = TEXT_LOCK.read().unwrap(); // acquire the lock for reading
             let mut lmap = LetterMap{letter:chs,map:hmap,key_list:llist};
             let cursor = buff.split_whitespace(); //break by spaces
             for current in cursor {
@@ -80,7 +97,7 @@ fn calculate_word_count(not_static_buff:String){
         });
         i += 1;
     }
-});
+}).unwrap();
 }
 
 /**
