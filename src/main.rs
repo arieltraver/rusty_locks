@@ -48,39 +48,39 @@ fn hash_words(mut lmap: LetterMap, letter:String, buff:String){//->LetterMap{
     }
     //*letter_struct
 } 
-fn calculate_word_count(buff:String){
-
+fn calculate_word_count(not_static_buff:String){
     let mut i:u8 = 97;
     crossbeam::scope(|s| { //make a new thread for every letter of the alphabet
-        while (i < 122) { 
-            let mut icpy = Arc::new(i);
-            s.spawn(move |_| {
-                let icopy = Arc::clone(&icpy);
-                let ch = *icopy as char; //turn the unicode into a char...
-                let chs = ch.to_string(); //for use in string checking
-                println!("{}", ch); //for testing
-                let mut hmap = HashMap::<String,i32>::new(); //new map for thread
-                let mut llist = LinkedList::<String>::new();
-                let mut lmap = LetterMap{letter:chs,map:hmap,key_list:llist};
-                let cursor = buff.split_whitespace(); //break by spaces
-				for current in cursor {
-        // for each word in iterator that starts with the 
-					if current.starts_with(chs) {
-           				if lmap.map.contains_key::<str>(&current) {
-           	    			let count=lmap.map.get_mut::<str>(&current).unwrap();
-            	   			*count = *count+1;
-           				}
-           				else { lmap.map.insert((&current).to_string(), 1);
-           				}
-        			}
-    			}
-                for (word, count) in lmap.map.iter() {
-                    println!("the word count for {}: {}",word,count);
+    static buff:String = not_static_buff.clone();
+    while (i < 122) { 
+        let mut icopy = Arc::new(i);
+        s.spawn(move |_| {
+            let ch = *icopy as char; //turn the unicode into a char...
+            let chs = ch.to_string(); //for use in string checking
+            let chs2 = ch.to_string(); //it requires two
+            println!("{}", ch); //for testing
+            let mut hmap = HashMap::<String,i32>::new(); //new map for thread
+            let mut llist = LinkedList::<String>::new();
+            let mut lmap = LetterMap{letter:chs,map:hmap,key_list:llist};
+            let cursor = buff.split_whitespace(); //break by spaces
+            for current in cursor {
+    // for each word in iterator that starts with the 
+                if current.starts_with(&chs2) {
+                    if lmap.map.contains_key::<str>(&current) {
+                        let count=lmap.map.get_mut::<str>(&current).unwrap();
+                        *count = *count+1;
+                    }
+                    else { lmap.map.insert((&current).to_string(), 1);
+                    }
                 }
-            });
-            i += 1;
-        }
-    });
+            }
+            for (word, count) in lmap.map.iter() {
+                println!("the word count for {}: {}",word,count);
+            }
+        });
+        i += 1;
+    }
+});
 }
 
 /**
