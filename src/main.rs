@@ -50,28 +50,22 @@ fn hash_words(mut lmap: LetterMap, letter:String, buff:String){//->LetterMap{
 } 
 fn calculate_word_count(buff:String){
 
-    let alphabet2 = "abcdefjhijklmnopqrsuvwxyz".chars();
-    let mut alphabet = Vec::with_capacity(26);
-    for ch in alphabet2 {
-        let mut chs = ch.to_string();
-        alphabet.push(chs);
-        let mut chs2 = ch.to_string();
-        let mut hmap = HashMap::<String,i32>::new();
-        let mut llist = LinkedList::<String>::new();
-        let mut lmap = LetterMap{letter:chs2,map:hmap,key_list:llist};
-    }
-    let mut i = 0;
+    let mut i:u8 = 97;
     crossbeam::scope(|s| { //make a new thread for every letter of the alphabet
-        while (i < 26) { 
-            let handle = s.spawn(|_| {
-                let mut hmap = HashMap::<String,i32>::new();
+        while (i < 122) { 
+            let mut icpy = Arc::new(i);
+            s.spawn(move |_| {
+                let icopy = Arc::clone(&icpy);
+                let ch = *icopy as char; //turn the unicode into a char...
+                let chs = ch.to_string(); //for use in string checking
+                println!("{}", ch); //for testing
+                let mut hmap = HashMap::<String,i32>::new(); //new map for thread
                 let mut llist = LinkedList::<String>::new();
-                let mut lmap = LetterMap{letter:alphabet[i],map:hmap,key_list:llist};
-                let cursor = buff.split_whitespace();
+                let mut lmap = LetterMap{letter:chs,map:hmap,key_list:llist};
+                let cursor = buff.split_whitespace(); //break by spaces
 				for current in cursor {
         // for each word in iterator that starts with the 
-					if current.starts_with(&alphabet[i]) {
-                
+					if current.starts_with(chs) {
            				if lmap.map.contains_key::<str>(&current) {
            	    			let count=lmap.map.get_mut::<str>(&current).unwrap();
             	   			*count = *count+1;
