@@ -3,11 +3,18 @@ extern crate lazy_static;
 use std::time::{Duration, Instant};
 use std::fs;
 use std::string::String;
-use std::collections::HashMap;
 use std::str;
 use std::sync::RwLock;
 use std::sync::Arc;
+//use fnv::FnvHashMap;
+//use std::hash::{Hash, Hasher};
+use std::collections::HashMap;
 
+/**
+ * LetterMap
+ * A hashmap and the letter which all of its word keys start with
+ * Used by the multithreaded version
+ * **/
 struct LetterMap{
     letter: String,
     map: HashMap<String, i32>,
@@ -18,34 +25,58 @@ lazy_static! {
     pub static ref TEXT_LOCK: RwLock<String> = RwLock::new(String::new());
 }
 
- fn main() {
+fn main() {
+    run_tests();
+}
 
+
+
+ fn run_tests() {
+    /**
     let test_1 = String::from("test_2.txt");
     prepare_buff(test_1);
     
     let start = Instant::now();
-    calculate_word_count();
+    calculate_word_count(7);
     let mut elapsed = start.elapsed();
     
     let start2 = Instant::now();
     calculate_word_single();
     let mut elapsed2 = start2.elapsed();
-    println!("Time elapsed without concurrency: {:?}", elapsed2);
-    println!("Time elapsed with concurrency: {:?}", elapsed);
 
     let test_2 = String::from("mobydick.txt");
     prepare_buff(test_2);
     
     let start3 = Instant::now();
-    calculate_word_count();
-    elapsed = start3.elapsed();
+    calculate_word_count(13);
+    let elapsed3 = start3.elapsed();
     
     let start4 = Instant::now();
     calculate_word_single();
-    elapsed2 = start4.elapsed();
+    let elapsed4 = start4.elapsed();
+    
+    **/
+    let test_3 = String::from("./text/mobydick.txt");
+    prepare_buff(test_3);
+
+    let start5 = Instant::now();
+    calculate_word_count(7);
+    let elapsed5 = start5.elapsed();
+
+    let start6 = Instant::now();
+    calculate_word_single();
+    let elapsed6 = start6.elapsed();
+    /**
     println!("Time elapsed without concurrency: {:?}", elapsed2);
     println!("Time elapsed with concurrency: {:?}", elapsed);
- }
+    println!();
+    println!("Time elapsed without concurrency: {:?}", elapsed4);
+    println!("Time elapsed with concurrency: {:?}", elapsed3);
+    println!();
+    **/
+    println!("Time elapsed without concurrency: {:?}", elapsed6);
+    println!("Time elapsed with concurrency: {:?}", elapsed5);
+    }
 
 fn prepare_buff(filename:String){
     let mut buff:String = fs::read_to_string(filename)
@@ -53,27 +84,7 @@ fn prepare_buff(filename:String){
     buff = replace_chars(buff);
     buff = str::to_lowercase(&buff[..]); 
     let mut text = TEXT_LOCK.write().unwrap();
-    *text = buff;
-    
-}
-/** For use in a single-thread implementation only. **/
-fn hash_words(mut lmap: LetterMap, letter:String, buff:String){//->LetterMap{
-    // splits the word buffer by white spaces 
-    // the method also creates a iterator
-    let letter_struct = &mut lmap;
-    let cursor = buff.split_whitespace();
-    
-    for current in cursor {
-        // for each word in iterator that starts with the 
-        if current.starts_with(&letter) {
-           if letter_struct.map.contains_key::<str>(&current) {
-               let count=letter_struct.map.get_mut::<str>(&current).unwrap();
-               *count = *count+1;
-           }
-           else { letter_struct.map.insert( (&current).to_string(), 1);}
-        }
-    }
-    //*letter_struct
+    *text = buff;    
 }
 
 fn calculate_word_single() {
@@ -93,21 +104,23 @@ fn calculate_word_single() {
 	} 
 }
 
-fn calculate_word_count(){
+fn calculate_word_count(range0:u8){
     let mut i:u8 = 97; //u8 for the character 'a'
     crossbeam::scope(|s| { //threads guaranteed to join before this scope ends
     while i <= 122 { //u8 for the character 'z'
         let icopy = Arc::new(i);
+        let range = Arc::new(range0);
         s.spawn(move |_| {
-            let ch = *icopy as char; //turn the unicode into a char...
-            let chs = ch.to_string(); //for use in string checking
-            let chs2 = ch.to_string(); //it requires two
-            let mut hmap = HashMap::<String,i32>::new(); //new map for thread
+            let chs = (*icopy as char).to_string(); //for use in string checking
+            let chs2 = (*icopy as char).to_string(); //it requires two
+            let mut hmap = HashMap::<String,i32,>::new(); //new map for thread
+            //let mut hmap = HashMap::<String, i32, BuildHasherDefault<FnvHashMap>>::default();
             let buff = TEXT_LOCK.read().unwrap(); // acquire the lock for reading
             let mut lmap = LetterMap{letter:chs,map:hmap};
             let cursor = buff.split_whitespace(); //break by spaces
             for current in cursor {
-                if current.starts_with(&chs2) { //only look at certain letters
+                let first = current.chars().next().unwrap() as u8;
+                if first >= *icopy && first < *icopy + *range { //only look at certain letters
                     if lmap.map.contains_key::<str>(&current) {
                         let count=lmap.map.get_mut::<str>(&current).unwrap();
                         *count = *count+1;
@@ -120,7 +133,7 @@ fn calculate_word_count(){
                 println!("the word count for {}: {}",word,count);
             }
         });
-        i += 1;
+        i += range0;
     }
 }).unwrap();
 }
