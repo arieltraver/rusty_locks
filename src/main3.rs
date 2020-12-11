@@ -6,8 +6,8 @@ use std::string::String;
 use std::str;
 use std::sync::RwLock;
 use std::sync::Arc;
-use fnv::FnvHashMap; //this hash function crate works great for small keys.
-use std::hash::{Hash, Hasher};
+//use fnv::FnvHashMap;
+//use std::hash::{Hash, Hasher};
 use std::collections::HashMap;
 
 /**
@@ -20,8 +20,8 @@ struct LetterMap{
     map: HashMap<String, i32>,
 }
 
-/** creates a global instance of the text which can be shared with threads **/
 lazy_static! {
+    // creates a global instance of the text which can be shared with threads 
     pub static ref TEXT_LOCK: RwLock<String> = RwLock::new(String::new());
 }
 
@@ -29,11 +29,10 @@ fn main() {
     run_tests();
 }
 
-/**run_tests
- * runs a set of tests on different inputs and using different numbers of threads
- * **/
+
+
  fn run_tests() {
-    /***
+    /**
     let test_1 = String::from("test_2.txt");
     prepare_buff(test_1);
     
@@ -89,9 +88,7 @@ fn prepare_buff(filename:String){
 }
 
 fn calculate_word_single() {
-    //let hasher = FnvHashMap::default();
-    let mut map = FnvHashMap::with_hasher(Default::default());
-    //let mut map = HashMap::<String, i32>::new();
+    let mut map = HashMap::<String, i32>::new();
     let buff = TEXT_LOCK.read().unwrap();
     let cursor = buff.split_whitespace();
     for current in cursor {
