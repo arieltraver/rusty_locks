@@ -26,7 +26,7 @@ fn main() {
 /// run_tests
 /// runs a set of tests on different inputs and using different numbers of threads
  fn run_tests() {
-    /***
+    
     let test_1 = String::from("test_2.txt");
     prepare_buff(test_1);
     
@@ -48,8 +48,7 @@ fn main() {
     let start4 = Instant::now();
     calculate_word_single();
     let elapsed4 = start4.elapsed();
-    
-    **/
+
     let test_3 = String::from("./text/mobydick.txt");
     prepare_buff(test_3);
 
@@ -117,7 +116,7 @@ fn calculate_word_count(range0:u8){
     let mut i:u8 = 97; //u8 for the character 'a'
     crossbeam::scope(|s| { //threads guaranteed to join before this scope ends
     while i <= 122 { //u8 for the character 'z'
-        let icopy = Arc::new(i);
+        let icopy = Arc::new(i); //u
         let range = Arc::new(range0);
         s.spawn(move |_| {
             let mut hmap = HashMap::<String,i32,>::new(); //new map for thread
