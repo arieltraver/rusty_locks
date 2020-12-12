@@ -27,7 +27,7 @@ fn main() {
 /// runs a set of tests on different inputs and using different numbers of threads
  fn run_tests() {
     
-    let test_1 = String::from("test_2.txt");
+    let test_1 = String::from("./text/bible.txt");
     prepare_buff(test_1);
     
     let start = Instant::now();
@@ -38,18 +38,18 @@ fn main() {
     calculate_word_single();
     let mut elapsed2 = start2.elapsed();
 
-    let test_2 = String::from("mobydick.txt");
+    let test_2 = String::from("./text/bible.txt");
     prepare_buff(test_2);
     
     let start3 = Instant::now();
-    calculate_word_count(13);
+    calculate_word_count(7);
     let elapsed3 = start3.elapsed();
     
     let start4 = Instant::now();
     calculate_word_single();
     let elapsed4 = start4.elapsed();
 
-    let test_3 = String::from("./text/mobydick.txt");
+    let test_3 = String::from("./text/bible.txt");
     prepare_buff(test_3);
 
     let start5 = Instant::now();
@@ -59,14 +59,12 @@ fn main() {
     let start6 = Instant::now();
     calculate_word_single();
     let elapsed6 = start6.elapsed();
-    /***
     println!("Time elapsed without concurrency: {:?}", elapsed2);
     println!("Time elapsed with concurrency: {:?}", elapsed);
     println!();
     println!("Time elapsed without concurrency: {:?}", elapsed4);
     println!("Time elapsed with concurrency: {:?}", elapsed3);
     println!();
-    ***/
     println!("Time elapsed without concurrency: {:?}", elapsed6);
     println!("Time elapsed with concurrency: {:?}", elapsed5);
     }
@@ -81,7 +79,7 @@ fn prepare_buff(filename:String){
         .expect("bad file read");
     buff = replace_chars(buff);
     buff = str::to_lowercase(&buff[..]); 
-    let mut text = TEXT_LOCK.write().unwrap();
+    let mut text = TEXT_LOCK.write().unwrap(); //unlock the static String
     *text = buff;    
 }
 
@@ -89,13 +87,13 @@ fn prepare_buff(filename:String){
 ///Iterates through each word in the text and places it in its appropriate position in the hashmap.
 ///This function uses no threads.
 fn calculate_word_single() {
-    let mut map = FnvHashMap::with_hasher(Default::default());
-    //let mut map = HashMap::<String, i32>::new();
-    let buff = TEXT_LOCK.read().unwrap();
-    let cursor = buff.split_whitespace();
+    //let mut map = FnvHashMap::with_hasher(Default::default()); //alternate hasher
+    let mut map = HashMap::<String, i32>::new(); //generate a hash table
+    let buff = TEXT_LOCK.read().unwrap(); //unlock for reading
+    let cursor = buff.split_whitespace(); //generate iterator
     for current in cursor {
    		if map.contains_key::<str>(&current) {
-            let count=map.get_mut::<str>(&current).unwrap();
+            let count=map.get_mut::<str>(&current).unwrap(); //value at key
             *count = *count+1
 			}
         else {map.insert((&current).to_string(), 1);
@@ -118,7 +116,7 @@ fn calculate_word_count(range0:u8){
     while i <= 122 { //u8 for the character 'z'
         let icopy = Arc::new(i); //u
         let range = Arc::new(range0);
-        s.spawn(move |_| {
+        s.spawn(move |_| { //spawn a thread and move variables in
             let mut hmap = HashMap::<String,i32,>::new(); //new map for thread
             //let mut hmap = FnvHashMap::with_hasher(Default::default());
             let buff = TEXT_LOCK.read().unwrap(); // acquire the lock for reading
@@ -154,7 +152,7 @@ fn replace_chars(buff:String)->String {
     let mut new_buff = String::new();
     for ch in buff.chars() {
         if !v.contains(&ch) {
-            new_buff.push(ch);
+            new_buff.push(ch); //don't push punctuation in
         }
         else if ch == '\n' {
             new_buff.push(' ');
