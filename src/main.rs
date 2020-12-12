@@ -4,9 +4,10 @@ use std::time::{Duration, Instant};
 use std::fs;
 use std::string::String;
 use std::str;
+use std::sync::Mutex;
 use std::sync::RwLock;
 use std::sync::Arc;
-use fnv::FnvHashMap; //this hash function crate works great for small keys.
+//use fnv::FnvHashMap; //we tested another hash function but it didn't do much
 use std::hash::{Hash, Hasher};
 use std::collections::HashMap;
 
@@ -14,8 +15,8 @@ use std::collections::HashMap;
 // creates a global instance of the text which can be shared with threads
 lazy_static! {
     pub static ref TEXT_LOCK: RwLock<String> = RwLock::new(String::new());
+    pub static ref RESULT_VECTOR: Mutex<Vec<(String, i32)>> = Mutex::new(vec![]); 
 }
-
 
 ///main
 ///just calls run_tests
@@ -99,9 +100,6 @@ fn calculate_word_single() {
         else {map.insert((&current).to_string(), 1);
     	}
     }
-	for (key, count) in map.iter() {
-		println!("The word count for {}:{}", key, count);
-	} 
 }
 
 /// calculate_word_count
@@ -132,13 +130,16 @@ fn calculate_word_count(range0:u8){
                     }
                 }
             }
-            for (word, count) in hmap.iter() {
-                println!("the word count for {}: {}",word,count);
+            let mut vector = RESULT_VECTOR.lock().unwrap();
+            for (key, count) in &hmap {
+            let mut key2 = key.clone();
+            vector.push((key2,*count));
             }
         });
         i += range0;
     }
 }).unwrap();
+    analyze_results();
 }
 
 /// replace_chars
@@ -148,7 +149,7 @@ fn calculate_word_count(range0:u8){
 /// # Returns
 ///     * newbuff: a copy of the original without punctuation except spaces
 fn replace_chars(buff:String)->String {
-    let v = vec![',','\"','.','!','?','(',')','{','}',':',';','。','，','\\', '/','_','“','”'];
+    let v = vec![',','\"','.','!','?','(',')','{','}',':',';','。','，','\\', '/','_','“','”', '|'];
     let mut new_buff = String::new();
     for ch in buff.chars() {
         if !v.contains(&ch) {
@@ -159,4 +160,12 @@ fn replace_chars(buff:String)->String {
         }
     }
     new_buff
-} 
+}
+
+fn analyze_results() {
+    let mut vec = RESULT_VECTOR.lock().unwrap();
+    &(*vec).sort_by(|a, b| a.0.clone().cmp(&b.0.clone()));
+    for (key, count) in &*vec {
+        println!("The word count for {}:{}", key, count);
+    }
+}
