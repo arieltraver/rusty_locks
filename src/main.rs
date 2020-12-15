@@ -28,47 +28,19 @@ fn main() {
 /// runs a set of tests on different inputs and using different numbers of threads
  fn run_tests() {
     
-    let test_1 = String::from("./text/mobydick.txt");
+    let test_1 = String::from("./text/random_readable.txt");
     prepare_buff(test_1);
-    
+   
+    //fill the cache so that isn't included in our calculation
+    //we noticed first time for all test cases is often slower
+    calculate_word_count(7, true);
+
     let start = Instant::now();
-    calculate_word_count(7, false);
-    let mut elapsed = start.elapsed();
-    
-    let start2 = Instant::now();
-    calculate_word_single();
-    let mut elapsed2 = start2.elapsed();
+    calculate_word_count(7, true);
+    let elapsed = start.elapsed();
 
-    let test_2 = String::from("./text/mobydick.txt");
-    prepare_buff(test_2);
-    
-    let start3 = Instant::now();
-    calculate_word_count(7, false);
-    let elapsed3 = start3.elapsed();
-    
-    let start4 = Instant::now();
-    calculate_word_single();
-    let elapsed4 = start4.elapsed();
-
-    let test_3 = String::from("./text/mobydick.txt");
-    prepare_buff(test_3);
-
-    let start5 = Instant::now();
-    calculate_word_count(7, false);
-    let elapsed5 = start5.elapsed();
-
-    let start6 = Instant::now();
-    calculate_word_single();
-    let elapsed6 = start6.elapsed();
-    println!("Time elapsed without concurrency: {:?}", elapsed2);
-    println!("Time elapsed with concurrency: {:?}", elapsed);
-    println!();
-    println!("Time elapsed without concurrency: {:?}", elapsed4);
-    println!("Time elapsed with concurrency: {:?}", elapsed3);
-    println!();
-    println!("Time elapsed without concurrency: {:?}", elapsed6);
-    println!("Time elapsed with concurrency: {:?}", elapsed5);
-    }
+    println!("Time elapsed: {:?}", elapsed);
+}
 
 /// prepare_buff
 /// Clean the text from the file, replacing punctuation marks and newlines with spaces
@@ -136,7 +108,8 @@ fn calculate_word_count(range0:u8, mut extras:bool){
             }
             let mut vector = RESULT_VECTOR.lock().unwrap();
             for (key, count) in &hmap {
-            let mut key2 = key.clone();
+                println!("{} {}", key, count);
+                let mut key2 = key.clone();
             vector.push((key2,*count));
             }
         });
