@@ -28,33 +28,33 @@ fn main() {
 /// runs a set of tests on different inputs and using different numbers of threads
  fn run_tests() {
     
-    let test_1 = String::from("./text/bible.txt");
+    let test_1 = String::from("./text/mobydick.txt");
     prepare_buff(test_1);
     
     let start = Instant::now();
-    calculate_word_count(7);
+    calculate_word_count(7, false);
     let mut elapsed = start.elapsed();
     
     let start2 = Instant::now();
     calculate_word_single();
     let mut elapsed2 = start2.elapsed();
 
-    let test_2 = String::from("./text/bible.txt");
+    let test_2 = String::from("./text/mobydick.txt");
     prepare_buff(test_2);
     
     let start3 = Instant::now();
-    calculate_word_count(7);
+    calculate_word_count(7, false);
     let elapsed3 = start3.elapsed();
     
     let start4 = Instant::now();
     calculate_word_single();
     let elapsed4 = start4.elapsed();
 
-    let test_3 = String::from("./text/bible.txt");
+    let test_3 = String::from("./text/mobydick.txt");
     prepare_buff(test_3);
 
     let start5 = Instant::now();
-    calculate_word_count(7);
+    calculate_word_count(7, false);
     let elapsed5 = start5.elapsed();
 
     let start6 = Instant::now();
@@ -81,7 +81,7 @@ fn prepare_buff(filename:String){
     buff = replace_chars(buff);
     buff = str::to_lowercase(&buff[..]); 
     let mut text = TEXT_LOCK.write().unwrap(); //unlock the static String
-    *text = buff;    
+    *text = buff;
 }
 
 ///calculate_word_single
@@ -99,7 +99,7 @@ fn calculate_word_single() {
 			}
         else {map.insert((&current).to_string(), 1);
     	}
-    }
+    } 
 }
 
 /// calculate_word_count
@@ -108,12 +108,13 @@ fn calculate_word_single() {
 /// Threads print out their results once their calculations are complete
 /// # Arguments
 ///     * range0: the range of u8 (unicode) starting letters per thread
-fn calculate_word_count(range0:u8){
+fn calculate_word_count(range0:u8, mut extras:bool){
     let mut i:u8 = 97; //u8 for the character 'a'
     crossbeam::scope(|s| { //threads guaranteed to join before this scope ends
     while i <= 122 { //u8 for the character 'z'
         let icopy = Arc::new(i); //u
         let range = Arc::new(range0);
+        let extras_not_done = Arc::new(extras);
         s.spawn(move |_| { //spawn a thread and move variables in
             let mut hmap = HashMap::<String,i32,>::new(); //new map for thread
             //let mut hmap = FnvHashMap::with_hasher(Default::default());
@@ -121,7 +122,10 @@ fn calculate_word_count(range0:u8){
             let cursor = buff.split_whitespace(); //break by spaces
             for current in cursor {
                 let first = current.chars().next().unwrap() as u8;
-                if first >= *icopy && first < *icopy + *range { //only look at certain letters
+                //the extras_not_done determines whether random non-letters should be counted
+                if (first >= *icopy && first < *icopy + *range ) 
+                   | (*extras_not_done && (first < 97 || first > 122))
+                { //only look at certain letters
                     if hmap.contains_key::<str>(&current) {
                         let count=hmap.get_mut::<str>(&current).unwrap();
                         *count = *count+1;
@@ -136,10 +140,13 @@ fn calculate_word_count(range0:u8){
             vector.push((key2,*count));
             }
         });
+        extras = false;
         i += range0;
     }
+    if extras {
+    }
 }).unwrap();
-    analyze_results();
+    //analyze_results();
 }
 
 /// replace_chars
@@ -149,23 +156,31 @@ fn calculate_word_count(range0:u8){
 /// # Returns
 ///     * newbuff: a copy of the original without punctuation except spaces
 fn replace_chars(buff:String)->String {
-    let v = vec![',','\"','.','!','?','(',')','{','}',':',';','。','，','\\', '/','_','“','”', '|'];
+    let v = vec![',','\"','.','!','?','(',')','{','}',':',';','。','，','\\', '/','_','“','”', '|', '+', '–'];
     let mut new_buff = String::new();
-    for ch in buff.chars() {
-        if !v.contains(&ch) {
-            new_buff.push(ch); //don't push punctuation in
+    let iterator = buff.chars();
+    for ch in iterator {
+        if v.contains(&ch) {
+            new_buff.push(' '); //don't push punctuation in
         }
         else if ch == '\n' {
             new_buff.push(' ');
+        }
+        else {
+            new_buff.push(ch);
         }
     }
     new_buff
 }
 
+///analyze_results
+///Takes the vector of tuples(word, count) from the counter and sorts it.
+///After sorting, it prints the results in order.
 fn analyze_results() {
     let mut vec = RESULT_VECTOR.lock().unwrap();
     &(*vec).sort_by(|a, b| a.0.clone().cmp(&b.0.clone()));
     for (key, count) in &*vec {
         println!("The word count for {}:{}", key, count);
     }
+    *vec = vec![];
 }
