@@ -80,6 +80,7 @@ fn calculate_word_single() {
 /// Threads print out their results once their calculations are complete
 /// # Arguments
 ///     * range0: the range of u8 (unicode) starting letters per thread
+///     * extras: boolean indicating if words start with non-alphabetical characters are included
 fn calculate_word_count(range0:u8, mut extras:bool){
     let mut i:u8 = 97; //u8 for the character 'a'
     crossbeam::scope(|s| { //threads guaranteed to join before this scope ends
@@ -100,24 +101,24 @@ fn calculate_word_count(range0:u8, mut extras:bool){
                 { //only look at certain letters
                     if hmap.contains_key::<str>(&current) {
                         let count=hmap.get_mut::<str>(&current).unwrap();
-                        *count = *count+1;
+                        *count = *count+1; // increment the count
                     }
-                    else { hmap.insert((&current).to_string(), 1);
+                    else { hmap.insert((&current).to_string(), 1); // insert new entry into hashmap
                     }
                 }
             }
-            let mut vector = RESULT_VECTOR.lock().unwrap();
-            for (key, count) in &hmap {
-                println!("{} {}", key, count);
-                let mut key2 = key.clone();
-            vector.push((key2,*count));
-            }
+            // let mut vector = RESULT_VECTOR.lock().unwrap(); // acquire the lock for reading
+            // /* for (key, count) in &hmap {
+            //     println!("{} {}", key, count); // printing the hashmap
+            //     let mut key2 = key.clone();
+            // vector.push((key2,*count)); //adding to the tuple
+            // } */
         });
-        extras = false;
+        extras = false; // toggle false
         i += range0;
     }
 }).unwrap();
-    //analyze_results();
+    analyze_results();
 }
 
 /// replace_chars
@@ -127,9 +128,10 @@ fn calculate_word_count(range0:u8, mut extras:bool){
 /// # Returns
 ///     * newbuff: a copy of the original without punctuation except spaces
 fn replace_chars(buff:String)->String {
+    // define the punctuations that we wish to removed
     let v = vec![',','\"','.','!','?','(',')','{','}',':',';','。','，','\\', '/','_','“','”', '|', '+', '–'];
-    let mut new_buff = String::new();
-    let iterator = buff.chars();
+    let mut new_buff = String::new(); // create new String to store cleaned buff
+    let iterator = buff.chars(); // creates an iterator over chars
     for ch in iterator {
         if v.contains(&ch) {
             new_buff.push(' '); //don't push punctuation in
@@ -138,20 +140,20 @@ fn replace_chars(buff:String)->String {
             new_buff.push(' ');
         }
         else {
-            new_buff.push(ch);
+            new_buff.push(ch); // push char in
         }
     }
-    new_buff
+    new_buff // return the cleaned string
 }
 
 ///analyze_results
 ///Takes the vector of tuples(word, count) from the counter and sorts it.
 ///After sorting, it prints the results in order.
 fn analyze_results() {
-    let mut vec = RESULT_VECTOR.lock().unwrap();
-    &(*vec).sort_by(|a, b| a.0.clone().cmp(&b.0.clone()));
+    let mut vec = RESULT_VECTOR.lock().unwrap(); // acquire the lock for writing
+    &(*vec).sort_by(|a, b| a.0.clone().cmp(&b.0.clone())); // sort the vector by lambda function
     for (key, count) in &*vec {
-        println!("The word count for {}:{}", key, count);
+        println!("The word count for {}:{}", key, count); // printing the sorted tuple
     }
-    *vec = vec![];
+    *vec = vec![]; // cleaning the tuple
 }
