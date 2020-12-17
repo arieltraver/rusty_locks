@@ -10,6 +10,7 @@ Eva and Ariel
     * main.rs contains our code for the frequency calculator.
     * text folder contains various txt files for testing:
         * mobydict.txt: a full version of the book downloaded from https://gist.github.com/StevenClontz/4445774.
+        * example.txt: a file containing words starting with non-alphabetical characters
         * test_1.txt: a text file containing words or phrases separated by newlines.
         * test_2.txt: a text file containing a poem.
         * manymoby.txt: a file containing many copies of mobydict.txt.
@@ -28,12 +29,11 @@ Eva and Ariel
     * first converts the filepath to a String in line 31.
     * calls prepare_buff() to load contents into the static string
     * then calls calculate)word_count().
-    *  calculate_word() also two parameters. 
+    *  calculate_word() has two parameters. 
         * range0: range of starting letters in u8 for which each thread is responsible. The number of thread spawned can be calculated by the formula 26/range.
         * extras: a boolean indicating extra features. If the boolean is set true, our calculator will include words starting with non-alphabetical characters and also numbers.
     *   Number of threads can be changed by range0.
-* After running,the unique words and their counts will be displayed in the output. The run time is also printed.
-* To sort the output, the user can call analyze_result() which will sort the tuple vector in alphabetical order and then prints it.
+* analyze_result()will sort the tuple vector in alphabetical order and then prints it.
 
 
 #### Suggested Tests and interpretation
@@ -41,7 +41,7 @@ Eva and Ariel
 * Here are some suggested tests:
     * example.txt illustrates that the extras features work as the file includes some words starting with -
     * test_2.txt illustrates that the punctuation removal is working
-    * bible.txt, manymoby.txt, mobydick.txt, and random_readable all are used that the calculator works on human readable text
+    * bible.txt, manymoby.txt, mobydick.txt, and random_readable all are used to show that the calculator works on human readable text
     * randstrnonum,random_unreadble, 3randstrnonum.txt can be run to show that the calculator works on random non-readable strings. 
 
 
