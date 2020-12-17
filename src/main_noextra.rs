@@ -33,10 +33,10 @@ fn main() {
    
     //fill the cache so that isn't included in our calculation
     //we noticed first time for all test cases is often slower
-    calculate_word_count(7, true);
+    calculate_word_count(7);
 
     let start = Instant::now();
-    calculate_word_count(7, true);
+    calculate_word_count(7);
     let elapsed = start.elapsed();
 
     println!("Time elapsed: {:?}", elapsed);
@@ -80,13 +80,12 @@ fn calculate_word_single() {
 /// Threads print out their results once their calculations are complete
 /// # Arguments
 ///     * range0: the range of u8 (unicode) starting letters per thread
-fn calculate_word_count(range0:u8, mut extras:bool){
+fn calculate_word_count(range0:u8){
     let mut i:u8 = 97; //u8 for the character 'a'
     crossbeam::scope(|s| { //threads guaranteed to join before this scope ends
     while i <= 122 { //u8 for the character 'z'
         let icopy = Arc::new(i); //u
         let range = Arc::new(range0);
-        let extras_not_done = Arc::new(extras);
         s.spawn(move |_| { //spawn a thread and move variables in
             let mut hmap = HashMap::<String,i32,>::new(); //new map for thread
             //let mut hmap = FnvHashMap::with_hasher(Default::default());
@@ -94,10 +93,7 @@ fn calculate_word_count(range0:u8, mut extras:bool){
             let cursor = buff.split_whitespace(); //break by spaces
             for current in cursor {
                 let first = current.chars().next().unwrap() as u8;
-                //the extras_not_done determines whether random non-letters should be counted
-                if (first >= *icopy && first < *icopy + *range ) 
-                   | (*extras_not_done && (first < 97 || first > 122))
-                { //only look at certain letters
+                if first >= *icopy && first < *icopy + *range { //only look at certain letters
                     if hmap.contains_key::<str>(&current) {
                         let count=hmap.get_mut::<str>(&current).unwrap();
                         *count = *count+1;
@@ -113,7 +109,6 @@ fn calculate_word_count(range0:u8, mut extras:bool){
             vector.push((key2,*count));
             }
         });
-        extras = false;
         i += range0;
     }
 }).unwrap();

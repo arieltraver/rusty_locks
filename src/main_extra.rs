@@ -28,7 +28,7 @@ fn main() {
 /// runs a set of tests on different inputs and using different numbers of threads
  fn run_tests() {
     
-    let test_1 = String::from("./text/3randstrnonum.txt");
+    let test_1 = String::from("./text/random_readable.txt");
     prepare_buff(test_1);
    
     //fill the cache so that isn't included in our calculation
@@ -115,6 +115,8 @@ fn calculate_word_count(range0:u8, mut extras:bool){
         });
         extras = false;
         i += range0;
+    }
+    if extras {
     }
 }).unwrap();
     //analyze_results();
