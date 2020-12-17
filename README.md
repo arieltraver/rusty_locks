@@ -23,19 +23,29 @@ Eva and Ariel
 
 
 ### Running the word statistics calculator
-* To compile and run, enter the command cargo run on the terminal.
-* Currently, our main function calls run_tests() which loads the random_readable.txt and call calculate_word(). 
-* calculate_word() also two parameters. 
-    * The first is the range of starting letters each thread is responsible. The number of thread spawned can be calculated by 26/range.
-    * a boolean indicating extra features. If the boolean is set true, our calculator will include words starting with non-alphabetical characters and also numbers.
-    * currently, our calculator will spawn 4 threads and includes words starting with non-alphaebetical characters.
-    * Number of threads can be changed by range.
+* To compile and run our multithread calculator, please cd into the folder src and then enter the command cargo run on the terminal.
+* Our main function calls run_tests(), our testing function
+    * first converts the filepath to a String in line 31.
+    * calls prepare_buff() to load contents into the static string
+    * then calls calculate)word_count().
+    *  calculate_word() also two parameters. 
+        * range0: range of starting letters in u8 for which each thread is responsible. The number of thread spawned can be calculated by the formula 26/range.
+        * extras: a boolean indicating extra features. If the boolean is set true, our calculator will include words starting with non-alphabetical characters and also numbers.
+    *   Number of threads can be changed by range0.
+* After running,the unique words and their counts will be displayed in the output. The run time is also printed.
+* To sort the output, the user can call analyze_result() which will sort the tuple vector in alphabetical order and then prints it.
 
-* To turn off extra features, just pass false as the second parameter.
-* To run a different text file, please change the file path parameter in line 31.
-* After running, the unique words and their counts will be displayed in the output. The run time is also printed.
+
+#### Suggested Tests and interpretation
+* To run on different text file, just changed the filepath on line 31
+* Here are some suggested tests:
+    * example.txt illustrates that the extras features work as the file includes some words starting with -
+    * test_2.txt illustrates that the punctuation removal is working
+    * bible.txt, manymoby.txt, mobydick.txt, and random_readable all are used that the calculator works on human readable text
+    * randstrnonum,random_unreadble, 3randstrnonum.txt can be run to show that the calculator works on random non-readable strings. 
 
 
-#### Limitations:
+
+##### Limitations:
 * Our word calculator can only work on one single text file at a time. If called on .subsequent files, no aggregate word frequency table will be printed.
 * Our calculator finds words by splitting by whitespace, so these "words" may be not be valid words. Our accurrancy and meaningfulness depend heavily on the text file.

@@ -28,7 +28,7 @@ fn main() {
 /// runs a set of tests on different inputs and using different numbers of threads
  fn run_tests() {
     
-    let test_1 = String::from("./text/random_readable.txt");
+    let test_1 = String::from("./text/randostrnonum.txt");
     prepare_buff(test_1);
    
     //fill the cache so that isn't included in our calculation
@@ -80,6 +80,7 @@ fn calculate_word_single() {
 /// Threads print out their results once their calculations are complete
 /// # Arguments
 ///     * range0: the range of u8 (unicode) starting letters per thread
+///     * extras: boolean indicating if words start with non-alphabetical characters are included
 fn calculate_word_count(range0:u8, mut extras:bool){
     let mut i:u8 = 97; //u8 for the character 'a'
     crossbeam::scope(|s| { //threads guaranteed to join before this scope ends
@@ -100,20 +101,20 @@ fn calculate_word_count(range0:u8, mut extras:bool){
                 { //only look at certain letters
                     if hmap.contains_key::<str>(&current) {
                         let count=hmap.get_mut::<str>(&current).unwrap();
-                        *count = *count+1;
+                        *count = *count+1; // increment the count
                     }
-                    else { hmap.insert((&current).to_string(), 1);
+                    else { hmap.insert((&current).to_string(), 1); // insert new entry into hashmap
                     }
                 }
             }
-            let mut vector = RESULT_VECTOR.lock().unwrap();
+            let mut vector = RESULT_VECTOR.lock().unwrap(); // acquire the lock for reading
             for (key, count) in &hmap {
-                println!("{} {}", key, count);
+                println!("{} {}", key, count); // printing the hashmap
                 let mut key2 = key.clone();
-            vector.push((key2,*count));
+            vector.push((key2,*count)); //adding to the tuple
             }
         });
-        extras = false;
+        extras = false; // toggle false
         i += range0;
     }
     if extras {
