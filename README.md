@@ -25,7 +25,7 @@ Eva and Ariel
         * 3randstrnum.txt: 3 copies of randomstrnum.txt
 
 
-### Running the word statistics calculator
+## Running the word statistics calculator
 * To compile and run our multithread calculator, please cd into the folder src and then enter the command cargo run on the terminal.
 * Our main function calls run_tests(), our testing function
     * first converts the filepath to a String in line 31.
@@ -38,7 +38,7 @@ Eva and Ariel
 * analyze_result()will sort the tuple vector in alphabetical order and then prints it.
 
 
-#### Suggested Tests and interpretation
+## Suggested Tests and interpretation
 * To run on different text file, just changed the filepath on line 31
 * Here are some suggested tests:
     * example.txt illustrates that the extras features work as the file includes some words starting with -
@@ -47,7 +47,7 @@ Eva and Ariel
     * randstrnonum,random_unreadble, 3randstrnonum.txt can be run to show that the calculator works on random non-readable strings. 
 
 
-##### Limitations:
+## Limitations:
 
 * Our word calculator can only work on one single text file at a time. If called on subsequent files, no aggregate word frequency table will be printed.
 * Our calculator finds words by splitting by whitespace, so these "words" may be not be valid words. Our accurrancy and meaningfulness depend heavily on the text file.
