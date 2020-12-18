@@ -47,5 +47,5 @@ Eva and Ariel
 
 
 ##### Limitations:
-* Our word calculator can only work on one single text file at a time. If called on .subsequent files, no aggregate word frequency table will be printed.
+* Our word calculator can only work on one single text file at a time. If called on subsequent files, no aggregate word frequency table will be printed.
 * Our calculator finds words by splitting by whitespace, so these "words" may be not be valid words. Our accurrancy and meaningfulness depend heavily on the text file.
