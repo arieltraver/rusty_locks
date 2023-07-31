@@ -1,5 +1,5 @@
 # Rust_Final
-Eva Gao and Ariel Travers
+Eva Gao and Ariel Traver
 
 **Creating multi-threaded word frequency calculator with Rust**
 
